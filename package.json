@@ -25,6 +25,7 @@
     "@mastra/memory": "^1.23.0",
     "@mastra/observability": "^1.16.1",
     "caelus": "^0.23.0",
+    "caelus-mcp": "^0.23.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

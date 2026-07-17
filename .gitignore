@@ -4,5 +4,7 @@ dist/
 *.db
 *.db-journal
 *.db-wal
+*.db-shm
+*.duckdb
 .mastra/
 src/mastra/public/

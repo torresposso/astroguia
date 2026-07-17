@@ -10,13 +10,14 @@ import {
   SensitiveDataFilter,
 } from '@mastra/observability'
 import { initSchema } from './db/schema'
+import { DB_URL, DB_TOKEN } from './db/config'
 
 const storage = new MastraCompositeStore({
   id: 'composite-storage',
   default: new LibSQLStore({
     id: 'mastra-storage',
-    url: process.env.TURSO_DATABASE_URL ?? 'file:./mastra.db',
-    authToken: process.env.TURSO_AUTH_TOKEN,
+    url: DB_URL,
+    authToken: DB_TOKEN,
   }),
   domains: {
     observability: await new DuckDBStore().getStore('observability'),

@@ -1,9 +1,7 @@
 import { createClient } from '@libsql/client'
+import { DB_URL, DB_TOKEN } from './config'
 
-const DB_URL = process.env.TURSO_DATABASE_URL ?? 'file:./mastra.db'
-const DB_TOKEN = process.env.TURSO_AUTH_TOKEN
-
-export function getClient() {
+export function getLibSQLClient() {
   const config: { url: string; authToken?: string } = { url: DB_URL }
   if (DB_TOKEN) {
     config.authToken = DB_TOKEN
@@ -12,7 +10,7 @@ export function getClient() {
 }
 
 export async function initSchema() {
-  const client = getClient()
+  const client = getLibSQLClient()
 
   await client.execute(`
     CREATE TABLE IF NOT EXISTS clients (

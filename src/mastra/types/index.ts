@@ -8,9 +8,9 @@ export interface NatalInput {
 }
 
 export interface ProvenanceBlock {
-  house_system_requested: string
-  house_system_actual: string
-  birth_status: 'exact' | 'approximate' | 'unknown'
+  houseSystemRequested: string
+  houseSystemActual: string
+  birthStatus: 'exact' | 'approximate' | 'unknown'
 }
 
 export interface CaelusAtom {

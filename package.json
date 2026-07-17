@@ -7,7 +7,9 @@
     "test": "vitest run",
     "dev": "mastra dev",
     "build": "mastra build",
-    "start": "mastra start"
+    "start": "mastra start",
+    "evals": "npx tsx src/mastra/evals/ci.ts",
+    "evals:local": "EVAL_EVOLUTIONARY_COVERAGE_RATE=0.2 npx tsx src/mastra/evals/ci.ts"
   },
   "keywords": [],
   "author": "",

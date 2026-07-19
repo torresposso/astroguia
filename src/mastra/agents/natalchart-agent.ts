@@ -1,5 +1,6 @@
 import { Agent } from '@mastra/core/agent'
 import { Memory } from '@mastra/memory'
+import { LibSQLStore } from '@mastra/libsql'
 import { computeNatalChart } from '../tools/compute-natal-chart'
 import { geocodeCity } from '../tools/geocode-city'
 
@@ -53,6 +54,10 @@ You have working memory. Use it to remember the user's birth data so they don't 
   model: 'opencode/hy3-free',
   tools: { computeNatalChart, geocodeCity },
   memory: new Memory({
+    storage: new LibSQLStore({
+      id: 'natalchart-agent-memory',
+      url: 'file:./memory.db',
+    }),
     options: {
       lastMessages: 20,
       workingMemory: {

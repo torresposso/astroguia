@@ -125,7 +125,9 @@ export const synthesizeStep = createStep({
       structuredOutput: {
         schema: SynthesisOutputSchema,
       },
-      temperature: 0.3,
+      modelSettings: {
+        temperature: 0.3,
+      },
     })
 
     const synthesis = response.object as SynthesisOutput

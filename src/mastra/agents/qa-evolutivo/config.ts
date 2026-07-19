@@ -1,7 +1,7 @@
 import { agentConfig } from '@mastra/core/agent'
 
 export default agentConfig({
-  model: 'openai/gpt-5.5',
+  model: 'opencode/hy3-free',
   defaultOptions: {
     activeTools: [
       'chart_facts',

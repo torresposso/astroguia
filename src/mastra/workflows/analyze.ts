@@ -165,7 +165,9 @@ export const analyzeStep = createStep({
       structuredOutput: {
         schema: AnalysisSchema,
       },
-      temperature: 0.3,
+      modelSettings: {
+        temperature: 0.3,
+      },
     })
 
     const result = response.object as Analysis

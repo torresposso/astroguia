@@ -8,3 +8,5 @@ dist/
 *.duckdb
 .mastra/
 src/mastra/public/
+.agents/
+skills-lock.json

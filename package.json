@@ -7,7 +7,13 @@
     "test": "vitest run",
     "dev": "mastra dev",
     "build": "mastra build",
-    "start": "mastra start"
+    "start": "mastra start",
+    "trace:latest": "mastra api --url http://localhost:4111 trace list '{\"page\":0,\"perPage\":5}' | jq '.data[] | {traceId: .traceId[:16], name, entityId, duration: ((.endedAt[:19] + \"Z\" | fromdate) - (.startedAt[:19] + \"Z\" | fromdate))}'",
+    "trace:tools": "for tid in $(mastra api --url http://localhost:4111 trace list '{\"page\":0,\"perPage\":10}' | jq -r '.data[].traceId'); do tools=$(mastra api --url http://localhost:4111 trace get \"$tid\" | jq '[.data.spans[] | select(.spanType | IN(\"mcp_tool_call\",\"tool_call\")) | {name: .name, type: .spanType}]'); count=$(echo \"$tools\" | jq 'length'); if [ \"$count\" -gt 0 ]; then echo \"== ${tid:0:16} ($count tools) ==\"; echo \"$tools\" | jq -c '.[]'; fi; done",
+    "trace:errors": "mastra api --url http://localhost:4111 trace list '{\"hasChildError\":true,\"page\":0,\"perPage\":10}'",
+    "trace:get": "mastra api --url http://localhost:4111 trace get",
+    "trace:span": "mastra api --url http://localhost:4111 trace span",
+    "trace:list": "mastra api --url http://localhost:4111 trace list"
   },
   "keywords": [],
   "author": "",
@@ -17,9 +23,11 @@
     "@mastra/core": "^1.51.0",
     "@mastra/duckdb": "^1.5.1",
     "@mastra/libsql": "^1.16.0",
+    "@mastra/mcp": "^1.14.0",
     "@mastra/observability": "^1.16.1",
     "caelus": "^0.23.0",
     "caelus-birth": "0.23.0",
+    "caelus-mcp": "^0.23.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

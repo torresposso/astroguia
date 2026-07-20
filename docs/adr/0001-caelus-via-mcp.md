@@ -1,0 +1,3 @@
+# Caelus integration via MCP
+
+Use `caelus-mcp` as the sole astrological computation layer via `MCPClient` connecting to `npx caelus-mcp` instead of direct `caelus` npm imports with custom `createTool` wrappers. The 34 tools come with schemas, descriptions, and edge-case handling pre-built — no custom wrappers needed. The alternative (direct `caelus` imports with manual `createTool` wrappers per function) would require ~1000 lines of glue code for 34 tools across 7 agents and would need manual maintenance on every `caelus` update. The trade-off is a small stdio+JSON serialization overhead per tool call, but this is negligible compared to LLM response time.

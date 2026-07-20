@@ -1,0 +1,3 @@
+# Agent architecture: 1 orchestrator + 6 specialists
+
+Use 7 Mastra agents — 1 orchestrator (`ConsultationAgent`) + 6 specialists — instead of a single monolithic agent with all 34 tools. Each specialist only sees the tools relevant to its domain (2–9 tools), reducing tool-scoping confusion and hallucination risk. The orchestrator routes requests using Mastra's Supervisor Agent pattern (`agents: { ... }` property on the parent Agent). The alternative (one agent with all 34 tools) would require an enormous system prompt covering 6 domains and would risk the LLM choosing wrong tools across overlapping domains (e.g., `current_sky` is used differently by TransitAgent and ReturnsAgent).

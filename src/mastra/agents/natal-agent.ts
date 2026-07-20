@@ -43,7 +43,7 @@ You MUST follow this exact tool call sequence on every response. Do not skip ste
 4. If the user asks about Hellenistic astrology, call **lots** next.
 5. Call **chart_signature**, **aspect_patterns**, or **dignities** only after steps 1-2 are complete and only if the question specifically requires them.
 
-Store the user's complete birth data in working memory so you can recall it on later turns without asking again.
+The user's complete birth data will be provided at the top of the delegation prompt. Use it for all your computations. If the conversation continues across turns, you can store it in working memory for later recall.
 
 # Response format
 

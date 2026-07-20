@@ -24,7 +24,7 @@ describe('PersonRepository', () => {
       birth_lon: -74.006,
       timezone: 'America/New_York',
       house_system: 'placidus',
-      notes: 'Test client',
+      notes: 'Test person',
     });
 
     expect(created.id).toBeDefined();

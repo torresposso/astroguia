@@ -1,4 +1,5 @@
 import { createClient, type Client } from '@libsql/client';
+import { getDbPath } from './config';
 
 export interface Person {
   id: string;
@@ -23,11 +24,38 @@ export interface Consultation {
   summary?: string;
 }
 
+function rowToPerson(row: Record<string, unknown>): Person {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    birth_date: row.birth_date as string,
+    birth_time: row.birth_time as string,
+    birth_city: row.birth_city as string,
+    birth_lat: row.birth_lat as number,
+    birth_lon: row.birth_lon as number,
+    timezone: row.timezone as string,
+    house_system: row.house_system as string,
+    notes: row.notes as string,
+    created_at: row.created_at as string,
+  };
+}
+
+function rowToConsultation(row: Record<string, unknown>): Consultation {
+  return {
+    id: row.id as string,
+    person_id: row.person_id as string,
+    type: row.type as Consultation['type'],
+    thread_id: row.thread_id as string,
+    date: row.date as string,
+    summary: row.summary as string,
+  };
+}
+
 export class PersonRepository {
   private client: Client;
   private initialized = false;
 
-  constructor(dbPath: string = 'file:./persons.db') {
+  constructor(dbPath: string = getDbPath('persons.db')) {
     this.client = createClient({ url: dbPath });
   }
 
@@ -109,20 +137,7 @@ export class PersonRepository {
       args: [id],
     });
     if (res.rows.length === 0) return null;
-    const row = res.rows[0];
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      birth_date: row.birth_date as string,
-      birth_time: row.birth_time as string,
-      birth_city: row.birth_city as string,
-      birth_lat: row.birth_lat as number,
-      birth_lon: row.birth_lon as number,
-      timezone: row.timezone as string,
-      house_system: row.house_system as string,
-      notes: row.notes as string,
-      created_at: row.created_at as string,
-    };
+    return rowToPerson(res.rows[0] as Record<string, unknown>);
   }
 
   async findByName(name: string): Promise<Person | null> {
@@ -132,38 +147,13 @@ export class PersonRepository {
       args: [`%${name}%`],
     });
     if (res.rows.length === 0) return null;
-    const row = res.rows[0];
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      birth_date: row.birth_date as string,
-      birth_time: row.birth_time as string,
-      birth_city: row.birth_city as string,
-      birth_lat: row.birth_lat as number,
-      birth_lon: row.birth_lon as number,
-      timezone: row.timezone as string,
-      house_system: row.house_system as string,
-      notes: row.notes as string,
-      created_at: row.created_at as string,
-    };
+    return rowToPerson(res.rows[0] as Record<string, unknown>);
   }
 
   async list(): Promise<Person[]> {
     await this.ensureInitialized();
     const res = await this.client.execute(`SELECT * FROM persons ORDER BY created_at DESC`);
-    return res.rows.map((row) => ({
-      id: row.id as string,
-      name: row.name as string,
-      birth_date: row.birth_date as string,
-      birth_time: row.birth_time as string,
-      birth_city: row.birth_city as string,
-      birth_lat: row.birth_lat as number,
-      birth_lon: row.birth_lon as number,
-      timezone: row.timezone as string,
-      house_system: row.house_system as string,
-      notes: row.notes as string,
-      created_at: row.created_at as string,
-    }));
+    return (res.rows as Record<string, unknown>[]).map(rowToPerson);
   }
 
   async update(id: string, person: Partial<Person>): Promise<Person> {
@@ -226,14 +216,7 @@ export class PersonRepository {
       sql: `SELECT * FROM consultations WHERE person_id = ? ORDER BY date DESC`,
       args: [personId],
     });
-    return res.rows.map((row) => ({
-      id: row.id as string,
-      person_id: row.person_id as string,
-      type: row.type as any,
-      thread_id: row.thread_id as string,
-      date: row.date as string,
-      summary: row.summary as string,
-    }));
+    return (res.rows as Record<string, unknown>[]).map(rowToConsultation);
   }
 
   async close() {

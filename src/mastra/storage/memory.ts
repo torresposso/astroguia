@@ -1,4 +1,5 @@
 import { LibSQLStore } from '@mastra/libsql';
+import { getDbPath } from './config';
 
 /**
  * Shared LibSQL storage instance for all agent Memory backends.
@@ -9,5 +10,5 @@ import { LibSQLStore } from '@mastra/libsql';
  */
 export const memoryStorage = new LibSQLStore({
   id: 'agent-memory',
-  url: 'file:./memory.db',
+  url: getDbPath('memory.db'),
 });

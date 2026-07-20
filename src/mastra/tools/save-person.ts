@@ -1,6 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod/v4';
 import { db } from '../storage/persons';
+import { setCurrentPerson } from '../agents/session-state';
 
 export const savePerson = createTool({
   id: 'save_person',
@@ -45,6 +46,7 @@ export const savePerson = createTool({
       });
     }
 
+    setCurrentPerson(person);
     return {
       success: true,
       person,

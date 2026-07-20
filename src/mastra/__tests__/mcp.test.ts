@@ -15,13 +15,17 @@ describe('mcp tools filtering', () => {
       caelus_non_existent: { name: 'caelus_non_existent' },
     };
 
-    vi.spyOn(mcpClient, 'listTools').mockResolvedValue(mockTools as any);
+    const spy = vi.spyOn(mcpClient, 'listToolsWithErrors').mockResolvedValue({
+      tools: mockTools as any,
+      errors: {},
+    });
 
     // Natal agent should only get natal tools
     const natalTools = await getToolsFor('natal');
     expect(Object.keys(natalTools)).toContain('caelus_natal_chart');
     expect(Object.keys(natalTools)).toContain('caelus_chart_facts');
     expect(Object.keys(natalTools)).not.toContain('caelus_transits');
+    expect(spy).toHaveBeenCalled();
 
     // Transit agent should only get transit tools
     const transitTools = await getToolsFor('transit');

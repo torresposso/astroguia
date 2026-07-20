@@ -6,6 +6,8 @@ import { listPersons } from '../tools/list-persons'
 import { savePerson } from '../tools/save-person'
 import { WORKING_MEMORY_TEMPLATE } from '../memory/template'
 import { memoryStorage } from '../storage/memory'
+import { getCurrentPerson, getCurrentPersonId, formatPersonForPrompt } from './session-state'
+import { db } from '../storage/persons'
 import { natalAgent } from './natal-agent'
 import { transitAgent } from './transit-agent'
 import { synastryAgent } from './synastry-agent'
@@ -24,7 +26,7 @@ You are the primary astrological consultation orchestrator. You receive all mess
 
 You have three person-management tools:
 
-- **loadPerson** — Loads a person's profile by name or ID into working memory. Call this when the astrologer wants to work with a specific person.
+- **loadPerson** — Loads a person's profile by name or ID. Call this when the astrologer wants to work with a specific person. The person's birth data will be automatically passed to whichever specialist agent you delegate to.
 - **listPersons** — Lists all registered persons. Call this when the astrologer asks who they have on file.
 - **savePerson** — Creates or updates a person profile with birth data. Call this when the astrologer provides new person details.
 
@@ -43,9 +45,9 @@ You have six specialist agents available. Delegate to them based on the type of 
 
 1. When the astrologer starts a session, ask if they want to work with an existing person or create a new one.
 2. Use **listPersons** to show available persons, **loadPerson** to select one, or **savePerson** to create a new profile.
-3. Once a person is loaded into working memory, identify what type of astrological consultation they need.
-4. Delegate to the appropriate specialist agent. Pass the person's name and the specific question in your delegation message.
-5. The specialist agent will use the shared working memory to access the person's birth data.
+3. Once a person is loaded, identify what type of astrological consultation they need.
+4. Delegate to the appropriate specialist agent. Pass the specific question in your delegation message. The person's birth data will be automatically injected into the delegation prompt.
+5. The specialist agent will receive the birth data at the start of the delegation prompt.
 6. Review the specialist's response and present it to the astrologer. If needed, ask clarifying questions before delegating again.
 
 # Response format
@@ -58,7 +60,7 @@ You have six specialist agents available. Delegate to them based on the type of 
 # Constraints
 
 - Never attempt astrological calculations yourself — always delegate.
-- Load the correct person's data into working memory before delegating.
+- Load the correct person's data before delegating. The specialist will receive the birth data automatically.
 - If the astrologer switches to a different person, load the new person first.
 - Do not hallucinate birth data. Only use data from loadPerson or savePerson.
 - Do not claim to have astrological tools you do not have. You only have person management tools.`,
@@ -79,6 +81,40 @@ You have six specialist agents available. Delegate to them based on the type of 
   defaultOptions: {
     delegation: {
       messageFilter: ({ messages }) => messages.slice(-6),
+      onDelegationStart: ({ prompt }) => {
+        const person = getCurrentPerson()
+        if (!person) return { proceed: true }
+
+        const personData = formatPersonForPrompt(person)
+        const modifiedPrompt = `The user's birth data is already loaded:\n\n${personData}\n\n---\n${prompt}`
+
+        return { proceed: true, modifiedPrompt }
+      },
+      onDelegationComplete: async ({ primitiveId, success, result }) => {
+        const personId = getCurrentPersonId()
+        if (!personId || !success) return
+
+        const typeMap: Record<string, string> = {
+          'natal-agent': 'natal',
+          'transit-agent': 'transit',
+          'synastry-agent': 'synastry',
+          'timelord-agent': 'timelord',
+          'returns-agent': 'returns',
+          'rectification-agent': 'rectification',
+        }
+        const type = typeMap[primitiveId]
+        if (!type) return
+
+        try {
+          await db.saveConsultation({
+            person_id: personId,
+            type: type as any,
+            summary: result.text.slice(0, 200),
+          })
+        } catch {
+          // non-critical — consultation metadata is best-effort
+        }
+      },
     },
     tracingOptions: {
       tags: ['astroguia', 'consultation'],

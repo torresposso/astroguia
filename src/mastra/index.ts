@@ -8,12 +8,13 @@ import {
   SensitiveDataFilter,
 } from '@mastra/observability'
 import { consultationAgent } from './agents/consultation-agent'
+import { getDbPath } from './storage/config'
 
 const storage = new MastraCompositeStore({
   id: 'composite-storage',
   default: new LibSQLStore({
     id: 'mastra-storage',
-    url: 'file:./mastra.db',
+    url: getDbPath('mastra.db'),
   }),
   domains: {
     observability: await new DuckDBStore().getStore('observability'),

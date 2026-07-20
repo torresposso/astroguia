@@ -1,6 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod/v4';
 import { db } from '../storage/persons';
+import { setCurrentPerson } from '../agents/session-state';
 
 export const loadPerson = createTool({
   id: 'load_person',
@@ -22,12 +23,14 @@ export const loadPerson = createTool({
     }
 
     if (!person) {
+      setCurrentPerson(null);
       return {
         success: false,
         error: `Person not found${id ? ` with ID: ${id}` : ` with name: ${name}`}`,
       };
     }
 
+    setCurrentPerson(person);
     return {
       success: true,
       person,

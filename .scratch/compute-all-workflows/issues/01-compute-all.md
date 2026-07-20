@@ -2,6 +2,8 @@
 
 **What to build:** Al crear o actualizar una persona, un workflow ejecuta en batch todas las tools de caelus que no dependen de fecha objetivo y guarda los resultados en `persons.db`. Esto incluye tanto datos natales estáticos (natal chart, facts, signature, patterns, dignities, lots, nakshatras, vargas, yogas) como líneas de tiempo completas basadas en edad (dasha, firdaria, directions, releasing — hasta ~120 años desde nacimiento). Una vez cacheados, ningún workflow futuro necesita volver a llamar caelus para estos datos.
 
+- **GitHub**: [#14](https://github.com/torresposso/astroguia/issues/14)
+
 **Blocked by:** None — can start immediately.
 
 **Status:** ready-for-agent

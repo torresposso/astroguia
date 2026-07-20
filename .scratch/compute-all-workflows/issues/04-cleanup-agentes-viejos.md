@@ -2,7 +2,9 @@
 
 **What to build:** Eliminar toda la arquitectura anterior de 6 agentes especialistas + factory, ya que ahora solo existe el orquestador. Esto incluye archivos, referencias y documentación obsoleta.
 
-**Blocked by:** 02 (orquestador chat-mode) — el nuevo orquestador debe estar funcionando antes de eliminar los agentes viejos.
+- **GitHub**: [#17](https://github.com/torresposso/astroguia/issues/17)
+
+**Blocked by:** [#15](https://github.com/torresposso/astroguia/issues/15) (orquestador chat-mode) — el nuevo orquestador debe estar funcionando antes de eliminar los agentes viejos.
 
 **Status:** ready-for-agent
 

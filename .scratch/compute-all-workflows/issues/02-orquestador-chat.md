@@ -2,7 +2,9 @@
 
 **What to build:** Un único agente Mastra que recibe todas las preguntas del astrólogo. Solo tiene las 3 tools CRUD (`loadPerson`, `listPersons`, `savePerson`). En modo chat libre, el agente lee datos cacheados de `persons.db` y responde preguntas *sin llamar a caelus nunca*. Si faltan datos, sugiere ejecutar el workflow compute-all. Si necesita datos bajo demanda (transits, retornos, sinastría), delega al workflow correspondiente.
 
-**Blocked by:** 01 (compute-all) — necesita que exista el cache para poder leerlo.
+- **GitHub**: [#15](https://github.com/torresposso/astroguia/issues/15)
+
+**Blocked by:** [#14](https://github.com/torresposso/astroguia/issues/14) (compute-all) — necesita que exista el cache para poder leerlo.
 
 **Status:** ready-for-agent
 

@@ -2,7 +2,9 @@
 
 **What to build:** Workflows independientes que toman datos de persona (desde el cache de T1) más una fecha objetivo y llaman a caelus para obtener resultados que dependen de tiempo. Incluye: transits, profections, progressions, returns (solar/lunar), cosmic_weather, current_sky, sky_events. También el workflow de sinastría/composite que requiere 2 personas.
 
-**Blocked by:** 01 (compute-all) — necesita natal chart cacheado para calcular transits/progressions/returns contra la carta natal. Sinastría necesita ambas cartas natales cacheadas.
+- **GitHub**: [#16](https://github.com/torresposso/astroguia/issues/16)
+
+**Blocked by:** [#14](https://github.com/torresposso/astroguia/issues/14) (compute-all) — necesita natal chart cacheado para calcular transits/progressions/returns contra la carta natal. Sinastría necesita ambas cartas natales cacheadas.
 
 **Status:** ready-for-agent
 

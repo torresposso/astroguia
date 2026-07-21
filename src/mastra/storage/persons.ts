@@ -12,8 +12,20 @@ export interface Person {
   timezone: string;
   house_system?: string;
   notes?: string;
+  chart_data?: string; // JSON string
+  computed_at?: string; // ISO 8601
   created_at?: string;
 }
+
+export const CHART_DATA_TOOLS = [
+  'chart_facts',
+  'dasha',
+  'firdaria',
+  'directions',
+  'releasing',
+] as const;
+
+export type ChartDataTool = typeof CHART_DATA_TOOLS[number];
 
 export interface Consultation {
   id: string;
@@ -36,6 +48,8 @@ function rowToPerson(row: Record<string, unknown>): Person {
     timezone: row.timezone as string,
     house_system: row.house_system as string,
     notes: row.notes as string,
+    chart_data: row.chart_data as string | undefined,
+    computed_at: row.computed_at as string | undefined,
     created_at: row.created_at as string,
   };
 }
@@ -72,6 +86,8 @@ export class PersonRepository {
         timezone TEXT NOT NULL,
         house_system TEXT DEFAULT 'placidus',
         notes TEXT DEFAULT '',
+        chart_data TEXT,
+        computed_at TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -173,10 +189,26 @@ export class PersonRepository {
     const house_system = person.house_system ?? existing.house_system ?? 'placidus';
     const notes = person.notes ?? existing.notes ?? '';
 
+    const birthFieldsChanged =
+      (person.birth_date !== undefined && person.birth_date !== existing.birth_date) ||
+      (person.birth_time !== undefined && person.birth_time !== existing.birth_time) ||
+      (person.birth_city !== undefined && person.birth_city !== existing.birth_city) ||
+      (person.birth_lat !== undefined && person.birth_lat !== existing.birth_lat) ||
+      (person.birth_lon !== undefined && person.birth_lon !== existing.birth_lon) ||
+      (person.timezone !== undefined && person.timezone !== existing.timezone) ||
+      (person.house_system !== undefined && person.house_system !== existing.house_system);
+
     await this.client.execute({
       sql: `UPDATE persons SET name = ?, birth_date = ?, birth_time = ?, birth_city = ?, birth_lat = ?, birth_lon = ?, timezone = ?, house_system = ?, notes = ? WHERE id = ?`,
       args: [name, birth_date, birth_time, birth_city, birth_lat, birth_lon, timezone, house_system, notes, id],
     });
+
+    if (birthFieldsChanged) {
+      await this.invalidateChartData(id);
+    }
+
+    const chart_data = birthFieldsChanged ? undefined : existing.chart_data;
+    const computed_at = birthFieldsChanged ? undefined : existing.computed_at;
 
     return {
       id,
@@ -189,6 +221,8 @@ export class PersonRepository {
       timezone,
       house_system,
       notes,
+      chart_data,
+      computed_at,
     };
   }
 
@@ -217,6 +251,36 @@ export class PersonRepository {
       args: [personId],
     });
     return (res.rows as Record<string, unknown>[]).map(rowToConsultation);
+  }
+
+  async saveChartData(personId: string, results: Record<string, unknown>): Promise<void> {
+    await this.ensureInitialized();
+    const serialized = JSON.stringify(results);
+    const computedAt = new Date().toISOString();
+    await this.client.execute({
+      sql: `UPDATE persons SET chart_data = ?, computed_at = ? WHERE id = ?`,
+      args: [serialized, computedAt, personId],
+    });
+  }
+
+  async loadChartData(personId: string): Promise<Record<string, unknown> | null> {
+    await this.ensureInitialized();
+    const res = await this.client.execute({
+      sql: `SELECT chart_data FROM persons WHERE id = ?`,
+      args: [personId],
+    });
+    if (res.rows.length === 0) return null;
+    const row = res.rows[0] as Record<string, unknown>;
+    if (!row.chart_data) return null;
+    return JSON.parse(row.chart_data as string) as Record<string, unknown>;
+  }
+
+  async invalidateChartData(personId: string): Promise<void> {
+    await this.ensureInitialized();
+    await this.client.execute({
+      sql: `UPDATE persons SET chart_data = NULL, computed_at = NULL WHERE id = ?`,
+      args: [personId],
+    });
   }
 
   async close() {

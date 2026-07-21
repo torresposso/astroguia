@@ -2,8 +2,9 @@ import { Agent } from '@mastra/core/agent'
 import { Memory } from '@mastra/memory'
 import { TokenLimiter, ToolCallFilter } from '@mastra/core/processors'
 import { loadPerson } from '../tools/load-person'
-import { listPersons } from '../tools/list-persons'
 import { savePerson } from '../tools/save-person'
+import { listPersons } from '../tools/list-persons'
+import { loadChartData } from '../tools/load-chart-data'
 import { WORKING_MEMORY_TEMPLATE } from '../memory/template'
 import { memoryStorage } from '../storage/memory'
 import { getCurrentPerson, getCurrentPersonId, formatPersonForPrompt } from './session-state'
@@ -24,11 +25,12 @@ You are the primary astrological consultation orchestrator. You receive all mess
 
 # Your tools
 
-You have three person-management tools:
+You have four tools:
 
 - **loadPerson** — Loads a person's profile by name or ID. Call this when the astrologer wants to work with a specific person. The person's birth data will be automatically passed to whichever specialist agent you delegate to.
 - **listPersons** — Lists all registered persons. Call this when the astrologer asks who they have on file.
 - **savePerson** — Creates or updates a person profile with birth data. Call this when the astrologer provides new person details.
+- **loadChartData** — Loads pre-computed astrological chart data (natal chart, dashas, firdaria, directions, releasing) for the current person. Use this for questions about the birth chart, planetary positions, aspects, patterns, timing periods, etc. The data was computed when the person was created or last updated.
 
 # Your sub-agents
 
@@ -63,13 +65,13 @@ You have six specialist agents available. Delegate to them based on the type of 
 - Load the correct person's data before delegating. The specialist will receive the birth data automatically.
 - If the astrologer switches to a different person, load the new person first.
 - Do not hallucinate birth data. Only use data from loadPerson or savePerson.
-- Do not claim to have astrological tools you do not have. You only have person management tools.`,
+- Do not claim to have astrological tools you do not have. You have person management tools and loadChartData for reading pre-computed chart data. For live astrological computation (transits, synastry, progressions, returns), delegate to the appropriate specialist agent.`,
   model: 'opencode/hy3-free',
   inputProcessors: [
     new TokenLimiter(100000),
     new ToolCallFilter({ preserveModelOutput: true, filterAfterToolSteps: 3 }),
   ],
-  tools: { loadPerson, listPersons, savePerson },
+  tools: { loadPerson, listPersons, savePerson, loadChartData },
   agents: {
     natalAgent,
     transitAgent,

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PersonRepository } from '../storage/persons';
+import { PersonRepository, CHART_DATA_TOOLS } from '../storage/persons';
 
 describe('PersonRepository', () => {
   let db: PersonRepository;
@@ -74,6 +74,64 @@ describe('PersonRepository', () => {
 
     const notFound = await db.findByName('Bob');
     expect(notFound).toBeNull();
+  });
+
+  it('should save and load chart_data', async () => {
+    const person = await db.create({
+      name: 'Chart Test',
+      birth_date: '1985-07-20',
+      birth_time: '14:30',
+      birth_city: 'Miami',
+      birth_lat: 25.76,
+      birth_lon: -80.19,
+      timezone: 'America/New_York',
+    });
+
+    const results = {
+      chart_facts: { sun: { sign: 'Cancer' } },
+      dasha: { current: 'Venus' },
+    };
+
+    await db.saveChartData(person.id, results);
+    const loaded = await db.loadChartData(person.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.chart_facts).toEqual({ sun: { sign: 'Cancer' } });
+    expect(loaded?.dasha).toEqual({ current: 'Venus' });
+  });
+
+  it('should return null when no chart_data exists', async () => {
+    const person = await db.create({
+      name: 'No Chart',
+      birth_date: '1990-01-01',
+      birth_time: '12:00',
+      birth_city: 'Tampa',
+      birth_lat: 27.95,
+      birth_lon: -82.46,
+      timezone: 'America/New_York',
+    });
+
+    const loaded = await db.loadChartData(person.id);
+    expect(loaded).toBeNull();
+  });
+
+  it('should invalidate chart_data on update', async () => {
+    const person = await db.create({
+      name: 'Invalidate Test',
+      birth_date: '1990-06-10',
+      birth_time: '14:30',
+      birth_city: 'Tampa',
+      birth_lat: 27.95,
+      birth_lon: -82.46,
+      timezone: 'America/New_York',
+    });
+
+    await db.saveChartData(person.id, { chart_facts: { data: 'test' } });
+    expect(await db.loadChartData(person.id)).not.toBeNull();
+
+    // Update should invalidate chart_data if birth data changes
+    await db.update(person.id, { birth_date: '1991-06-10' });
+    expect(await db.loadChartData(person.id)).toBeNull();
   });
 
   it('should create and list consultations', async () => {

@@ -23,13 +23,22 @@ A Mastra Agent instance with tools and instructions. Generic term.
 
 ## Agent orchestrator (Agente orquestador)
 
-An agent that routes requests to specialists. It manages persons (load/list/save tools) and delegates astrological computation to specialist agents. It has no Caelus MCP tools.
+An agent that receives all input, manages persons (load/list/save tools, `loadChartData`), reads pre-computed chart data from `persons.chart_data`, and delegates live computations to specialist agents. It has no Caelus MCP tools.
 **Avoid**: Supervisor, router, dispatcher
 
 ## Agent specialist (Agente especialista)
 
-An agent with a focused set of Caelus MCP tools for one astrological domain (natal, transits, synastry, dashas/firdaria/progressions, solar/lunar returns, rectification).
+An agent with a focused set of Caelus MCP tools for one astrological domain that requires live computation (transits, synastry, progressions/profections, solar/lunar returns, rectification). Specialist agents no longer exist for static chart data.
 **Avoid**: Worker, subagent, expert
+
+## Chart data
+
+Pre-computed astrological results stored as JSON in the `chart_data` column of `persons`. Includes the natal chart, chart facts, dignities, Hermetic lots, Vedic data, dashas, firdaria, primary directions, and zodiacal releasing. Computed once by the `computeAllCharts` workflow when a person is created or updated, then read directly by the orchestrator via `loadChartData`. The `chart_facts` tool bundles 9 sub-tools into one call and includes a ready-to-use LLM brief.
+**Avoid**: Cache, cached results, stored results
+
+## computeAllCharts
+
+A Mastra workflow that runs synchronously after `savePerson` creates or updates a person. Executes `chart_facts` + 4 timing tools (dasha, firdaria, directions, releasing) from caelus-mcp in parallel and stores results in `chart_data`. Partial failures are preserved; total failure throws an error.
 
 ## MCP client
 

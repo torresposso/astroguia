@@ -5,13 +5,13 @@ import { getToolsFor, AGENT_TOOLS } from '../mcp/caelus'
 import { WORKING_MEMORY_TEMPLATE } from '../memory/template'
 import { memoryStorage } from '../storage/memory'
 
-type AgentDomain = Exclude<keyof typeof AGENT_TOOLS, 'consultation'>
+type RemainingDomain = 'transit' | 'synastry' | 'returns' | 'rectification'
 
 export function createSpecialistAgent(config: {
   id: string
   name: string
   description: string
-  domain: AgentDomain
+  domain: RemainingDomain
   instructions: string
 }) {
   return new Agent({

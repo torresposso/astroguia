@@ -9,7 +9,6 @@ import { WORKING_MEMORY_TEMPLATE } from '../memory/template'
 import { memoryStorage } from '../storage/memory'
 import { getCurrentPerson, getCurrentPersonId, formatPersonForPrompt } from './session-state'
 import { db } from '../storage/persons'
-import { natalAgent } from './natal-agent'
 import { transitAgent } from './transit-agent'
 import { synastryAgent } from './synastry-agent'
 import { timelordAgent } from './timelord-agent'
@@ -34,21 +33,20 @@ You have four tools:
 
 # Your sub-agents
 
-You have six specialist agents available. Delegate to them based on the type of astrological consultation requested:
+You have five specialist agents available. Delegate to them based on the type of astrological consultation requested:
 
-1. **natalAgent** — For natal chart requests: birth chart computation, planet positions, aspects, patterns, dignities, Hermetic lots, nakshatras, vargas, Vedic yogas.
-2. **transitAgent** — For transit requests: current/future transits over the natal chart, exact aspect dates, cosmic weather, void-of-course Moon, planetary hours, sky events.
-3. **synastryAgent** — For relationship/compatibility requests: inter-chart aspects, house overlays, composite charts (midpoint and Davison).
-4. **timelordAgent** — For time-lord requests: Vedic dashas, firdaria, secondary progressions, primary directions, profections, zodiacal releasing.
-5. **returnsAgent** — For solar/lunar return requests: return chart computation for a specific period.
-6. **rectificationAgent** — For birth time rectification: ASC/MC grid sweeps, life event correlation via transit aspects.
+1. **transitAgent** — For transit requests: current/future transits over the natal chart, exact aspect dates, cosmic weather, void-of-course Moon, planetary hours, sky events.
+2. **synastryAgent** — For relationship/compatibility requests: inter-chart aspects, house overlays, composite charts (midpoint and Davison).
+3. **timelordAgent** — For progression and profection requests: secondary progressions, annual/monthly profections.
+4. **returnsAgent** — For solar/lunar return requests: return chart computation for a specific period.
+5. **rectificationAgent** — For birth time rectification: ASC/MC grid sweeps, life event correlation via transit aspects.
 
 # Workflow
 
 1. When the astrologer starts a session, ask if they want to work with an existing person or create a new one.
 2. Use **listPersons** to show available persons, **loadPerson** to select one, or **savePerson** to create a new profile.
-3. Once a person is loaded, identify what type of astrological consultation they need.
-4. Delegate to the appropriate specialist agent. Pass the specific question in your delegation message. The person's birth data will be automatically injected into the delegation prompt.
+3. Once a person is loaded, identify what type of astrological consultation they need. For natal chart questions, use **loadChartData** to read pre-computed chart data.
+4. Delegate to the appropriate specialist agent for live computations (transits, synastry, progressions, profections, returns, rectification). Pass the specific question in your delegation message. The person's birth data will be automatically injected into the delegation prompt.
 5. The specialist agent will receive the birth data at the start of the delegation prompt.
 6. Review the specialist's response and present it to the astrologer. If needed, ask clarifying questions before delegating again.
 
@@ -73,7 +71,6 @@ You have six specialist agents available. Delegate to them based on the type of 
   ],
   tools: { loadPerson, listPersons, savePerson, loadChartData },
   agents: {
-    natalAgent,
     transitAgent,
     synastryAgent,
     timelordAgent,
@@ -97,7 +94,6 @@ You have six specialist agents available. Delegate to them based on the type of 
         if (!personId || !success) return
 
         const typeMap: Record<string, string> = {
-          'natal-agent': 'natal',
           'transit-agent': 'transit',
           'synastry-agent': 'synastry',
           'timelord-agent': 'timelord',

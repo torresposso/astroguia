@@ -12,17 +12,6 @@ export const mcpClient = new MCPClient({
 });
 
 export const AGENT_TOOLS = {
-  natal: [
-    'natal_chart',
-    'chart_facts',
-    'chart_signature',
-    'aspect_patterns',
-    'dignities',
-    'lots',
-    'nakshatras',
-    'vargas',
-    'yogas',
-  ],
   transit: [
     'transits',
     'find_aspect_dates',
@@ -33,7 +22,7 @@ export const AGENT_TOOLS = {
     'sky_events',
   ],
   synastry: ['synastry', 'composite'],
-  timelord: ['dasha', 'firdaria', 'progressions', 'directions', 'profections', 'releasing'],
+  timelord: ['progressions', 'profections'],
   returns: ['returns', 'current_sky'],
   rectification: ['rectification_grid', 'find_aspect_dates'],
   consultation: [],

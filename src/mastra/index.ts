@@ -8,6 +8,7 @@ import {
   SensitiveDataFilter,
 } from '@mastra/observability'
 import { consultationAgent } from './agents/consultation-agent'
+import { computeAllCharts } from './workflows/computeAllCharts'
 import { getDbPath } from './storage/config'
 
 const storage = new MastraCompositeStore({
@@ -33,4 +34,5 @@ export const mastra = new Mastra({
     },
   }),
   agents: { consultationAgent },
+  workflows: { computeAllCharts },
 })

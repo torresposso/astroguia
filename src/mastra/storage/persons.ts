@@ -289,3 +289,66 @@ export class PersonRepository {
 }
 
 export const db = new PersonRepository();
+
+export async function computeAllChartsForPerson(
+  personId: string,
+  repository?: PersonRepository,
+): Promise<{ success: boolean; computed_at: string }> {
+  const repo = repository ?? db;
+  const { mcpClient } = await import('../mcp/caelus');
+  const person = await repo.findById(personId);
+  if (!person) {
+    throw new Error(`Person with id ${personId} not found`);
+  }
+
+  const chartArgs = {
+    date: person.birth_date,
+    time: person.birth_time,
+    lat: person.birth_lat,
+    lon: person.birth_lon,
+    timezone: person.timezone,
+    house_system: person.house_system ?? 'placidus',
+    include_vedic: true,
+  };
+
+  const { tools } = await mcpClient.listToolsWithErrors();
+
+  const toolCalls = [
+    { name: 'chart_facts', tool: tools['caelus_chart_facts'] },
+    { name: 'dasha', tool: tools['caelus_dasha'] },
+    { name: 'firdaria', tool: tools['caelus_firdaria'] },
+    { name: 'directions', tool: tools['caelus_directions'] },
+    { name: 'releasing', tool: tools['caelus_releasing'] },
+  ];
+
+  const results: Record<string, unknown> = {};
+  let anySuccess = false;
+
+  const outcomes = await Promise.allSettled(
+    toolCalls.map(async ({ name, tool }) => {
+      if (!tool?.execute) {
+        results[name] = { error: 'Tool has no execute function' };
+        return;
+      }
+      const args: Record<string, unknown> = { ...chartArgs };
+      if (name === 'directions') args.max_years = 120;
+      if (name === 'releasing') args.horizon_years = 100;
+      const result = await tool.execute(args, {} as any);
+      results[name] = result;
+      anySuccess = true;
+    })
+  );
+
+  outcomes.forEach((outcome, i) => {
+    if (outcome.status === 'rejected') {
+      results[toolCalls[i].name] = { error: outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason) };
+    }
+  });
+
+  if (!anySuccess) {
+    throw new Error('All caelus-mcp tools failed to respond. The MCP server may be unavailable.');
+  }
+
+  await repo.saveChartData(personId, results);
+  return { success: true, computed_at: new Date().toISOString() };
+}
